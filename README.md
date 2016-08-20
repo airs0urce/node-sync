@@ -155,7 +155,7 @@ Sync(function(){
 	try {
 		// Three function calls in parallel
 		var foo = asyncFunction.future(null, 2, 3);
-		var bar = asyncFunction.future(null, 5, 5);
+		var bar = asyncFunctionWithPromise.futurep(null, 5, 5);
 		var baz = asyncFunction.future(null, 10, 10);
 	
 		// We are immediately here, no blocking
