@@ -1,5 +1,6 @@
 # Introduction
-node-sync is a simple library that allows you to call any asynchronous function in synchronous way. The main benefit is that it uses javascript-native design - Function.prototype.sync function, instead of heavy APIs which you'll need to learn. Also, asynchronous function which was called synchronously through node-sync doesn't blocks the whole process - it blocks only current thread!
+node-sync is a simple library that allows you to call any asynchronous function in synchronous way. The main benefit is that it uses javascript-native design - 
+Function.prototype.sync function for callback style fucntions and Function.prototype.syncp for functions returning promises, instead of heavy APIs which you'll need to learn. Also, asynchronous function which was called synchronously through node-sync doesn't blocks the whole process - it blocks only current thread!
 
 It built on [node-fibers](https://github.com/laverdet/node-fibers) library as a multithreading solution.
 
@@ -8,6 +9,14 @@ Simply call asynchronous function synchronously:
 
 ```javascript
 var Sync = require('sync');
+
+function asyncFunctionWithPromise(a, b, callback) {
+	return new Promise(function(resolve, reject) {
+		process.nextTick(function(){
+			resolve(a + b);
+		});
+	});
+}
 
 function asyncFunction(a, b, callback) {
 	process.nextTick(function(){
@@ -18,8 +27,8 @@ function asyncFunction(a, b, callback) {
 // Run in a fiber
 Sync(function(){
 	
-	// Function.prototype.sync() interface is same as Function.prototype.call() - first argument is 'this' context
-	var result = asyncFunction.sync(null, 2, 3);
+	// Function.prototype.sync() and Function.prototype.syncp() interfaces is same as Function.prototype.call() - first argument is 'this' context
+	var result = asyncFunctionWithPromise.syncp(null, 2, 3);
 	console.log(result); // 5
 
 	// Read file synchronously without blocking whole process? no problem
@@ -39,11 +48,29 @@ function asyncFunction(a, b, callback) {
 	})
 }
 
+function asyncFunctionWithPromise(a, b, callback) {
+	return new Promise(function(resolve, reject) {
+		process.nextTick(function(){
+			reject('something went wrong');
+		});
+	});
+}
+
 // Run in a fiber
 Sync(function(){
 
 	try {
 		var result = asyncFunction.sync(null, 2, 3);
+	}
+	catch (e) {
+		console.error(e); // something went wrong
+	}
+})
+
+Sync(function(){
+
+	try {
+		var result = asyncFunctionWithPromise.sync(null, 2, 3);
 	}
 	catch (e) {
 		console.error(e); // something went wrong
